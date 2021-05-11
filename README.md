@@ -1,7 +1,5 @@
 # Ansible Role: HAProxy
 
-[![CI](https://github.com/geerlingguy/ansible-role-haproxy/workflows/CI/badge.svg?event=push)](https://github.com/geerlingguy/ansible-role-haproxy/actions?query=workflow%3ACI)
-
 Installs HAProxy on RedHat/CentOS and Debian/Ubuntu Linux servers.
 
 **Note**: This role _officially_ supports HAProxy versions 1.4 or 1.5. Future versions may require some rework.
@@ -41,11 +39,12 @@ HAProxy frontend configuration directives.
 
 HAProxy backend configuration directives.
 
-    haproxy_backend_servers:
-      - name: app1
-        address: 192.168.0.1:80
-      - name: app2
-        address: 192.168.0.2:80
+    haproxy_backends:
+      - backend1:
+        - name: app1
+          address: 192.168.0.1:80
+        - name: app2
+          address: 192.168.0.2:80
 
 A list of backend servers (name and address) to which HAProxy will distribute requests.
 
@@ -68,9 +67,9 @@ None.
 ## Example Playbook
 
     - hosts: balancer
-      sudo: yes
+      become: yes
       roles:
-        - { role: geerlingguy.haproxy }
+        - { role: kogelvis.haproxy }
 
 ## License
 
@@ -78,4 +77,5 @@ MIT / BSD
 
 ## Author Information
 
-This role was created in 2015 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+Role forked from Jeff Geerling
+Additional work by Lammert Hellinga
