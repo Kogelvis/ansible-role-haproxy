@@ -57,7 +57,10 @@ frontend {{ haproxy_frontend_name }}
     bind {{ haproxy_frontend_bind_address }}:{{ haproxy_frontend_port }}
     bind {{ haproxy_frontend_bind_address }}:443 ssl crt {{ certs|join(' ') }}
     mode {{ haproxy_frontend_mode }}
+    http-request redirect scheme https unless { ssl_fc } || { path -i -m beg /.well-known/acme-challenge/ }
+    http-response set-header Strict-Transport-Security "max-age=16000000;" unless { path -i -m beg /.well-known/acme-challenge/ }
     default_backend {{ haproxy_backend_name }}
+    use_backend {{ haproxy_backend_name }} if { path -i -m beg /.well-known/acme-challenge/ }
 {% for backend in haproxy_backends|dict2items %}
     use_backend {{ backend.key }} if { hdr(host) -i {{ backend.value.urlpattern }} } { src {{ backend.value.allow_from|join(' } || { src ') }} }
 {% endfor %}
@@ -66,6 +69,9 @@ frontend {{ haproxy_frontend_name }}
 backend {{ backend.key }}
     mode {{ haproxy_backend_mode }}
     balance {{ haproxy_backend_balance_method }}
+    http-request set-header X-Forwarded-Proto https if { ssl_fc }
+    http-request set-header X-Forwarded-Proto http if !{ ssl_fc }
+    http-request set-header X-Forwarded-For %[src]
     option forwardfor
 {% if haproxy_backend_httpchk != '' %}
     option httpchk {{ haproxy_backend_httpchk }}
