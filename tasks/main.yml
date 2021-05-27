@@ -11,16 +11,18 @@
 - name: rsyslog load udp listener
   ansible.builtin.lineinfile:
     dest: /etc/rsyslog.conf
-    regexp: '^#?module(load="imudp")'
+    regexp: '^#?module\\\(load="imudp"\\\)'
     line: 'module(load="imudp") # needs to be done just once'
     state: present
+  notify: restart rsyslog
 
 - name: rsyslog listen locally on udp
   ansible.builtin.lineinfile:
     dest: /etc/rsyslog.conf
-    regexp: '^#?input(type="imudp" port="514"'
+    regexp: '^#?input\\\(type="imudp" port="514"'
     line: 'input(type="imudp" port="514" address="127.0.0.1")'
     state: present
+  notify: restart rsyslog
 
 - name: Place haproxy rsyslog config
   template:
