@@ -8,6 +8,20 @@
 - name: Ensure rsyslog is started and enabled on boot.
   service: name=rsyslog state=started enabled=yes
 
+- name: rsyslog load udp listener
+  ansible.builtin.lineinfile:
+    dest: /etc/rsyslog.conf
+    regexp: '^#?module(load="imudp")'
+    line: 'module(load="imudp") # needs to be done just once'
+    state: present
+
+- name: rsyslog listen locally on udp
+  ansible.builtin.lineinfile:
+    dest: /etc/rsyslog.conf
+    regexp: '^#?input(type="imudp" port="514"'
+    line: 'input(type="imudp" port="514" address="127.0.0.1")'
+    state: present
+
 - name: Place haproxy rsyslog config
   template:
     src: haproxy.conf.j2
