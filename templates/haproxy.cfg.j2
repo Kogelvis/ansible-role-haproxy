@@ -55,13 +55,19 @@ frontend stats
 
 frontend {{ haproxy_frontend_name }}
     bind {{ haproxy_frontend_bind_address }}:{{ haproxy_frontend_port }}
-    bind {{ haproxy_frontend_bind_address }}:443 ssl crt {{ certs|join(' crt ') }}
+    bind {{ haproxy_frontend_bind_address }}:443 v4v6 ssl crt {{ certs|join(' crt ') }}
     mode {{ haproxy_frontend_mode }}
     http-request redirect scheme https unless { ssl_fc } || { path -i -m beg /.well-known/acme-challenge/ }
-    http-response set-header Strict-Transport-Security "max-age=16000000;" if { ssl_fc }
+    http-response set-header Strict-Transport-Security "max-age=31536000; includeSubDomains;" if { ssl_fc }
+    http-response set-header X-Frame-Options "SAMEORIGIN"
+    http-response set-header X-Content-Type-Options "nosniff"
+    http-response set-header Content-Security-Policy "default-src 'self' data: 'unsafe-inline' 'unsafe-eval'; img-src 'self'; object-src 'none'; script-src 'self' data: 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
+    http-response set-header Referrer-Policy "same-origin"
     use_backend {{ haproxy_backend_name }} if { path -i -m beg /.well-known/acme-challenge/ }
 {% for backend in haproxy_backends|dict2items %}
-    use_backend {{ backend.key }} if { hdr(host) -i {{ backend.value.urlpattern }} } { src {{ backend.value.allow_from|join(' } || { src ') }} }
+{% for url in backend.value.urlpatterns %}
+    use_backend {{ backend.key }} if { hdr(host) -i {{ url }} } { src {{ backend.value.allow_from|join(' } || { src ') }} }
+{% endfor %}
 {% endfor %}
     default_backend {{ haproxy_backend_name }}
 
