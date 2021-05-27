@@ -1,9 +1,9 @@
 global
-    log /dev/log  local0
-    log /dev/log  local1 notice
+    log 127.0.0.1 local0
 {% if haproxy_socket != '' %}
     stats socket {{ haproxy_socket }} level admin
 {% endif %}
+    ssl-dh-param-file /etc/haproxy/dhparams.pem
 {% if haproxy_chroot != '' %}
     chroot {{ haproxy_chroot }}
 {% endif %}
@@ -55,15 +55,15 @@ frontend stats
 
 frontend {{ haproxy_frontend_name }}
     bind {{ haproxy_frontend_bind_address }}:{{ haproxy_frontend_port }}
-    bind {{ haproxy_frontend_bind_address }}:443 ssl crt {{ certs|join(' ') }}
+    bind {{ haproxy_frontend_bind_address }}:443 ssl crt {{ certs|join(' crt ') }}
     mode {{ haproxy_frontend_mode }}
     http-request redirect scheme https unless { ssl_fc } || { path -i -m beg /.well-known/acme-challenge/ }
-    http-response set-header Strict-Transport-Security "max-age=16000000;" unless { path -i -m beg /.well-known/acme-challenge/ }
-    default_backend {{ haproxy_backend_name }}
+    http-response set-header Strict-Transport-Security "max-age=16000000;" if { ssl_fc }
     use_backend {{ haproxy_backend_name }} if { path -i -m beg /.well-known/acme-challenge/ }
 {% for backend in haproxy_backends|dict2items %}
     use_backend {{ backend.key }} if { hdr(host) -i {{ backend.value.urlpattern }} } { src {{ backend.value.allow_from|join(' } || { src ') }} }
 {% endfor %}
+    default_backend {{ haproxy_backend_name }}
 
 {% for backend in haproxy_backends|dict2items %}
 backend {{ backend.key }}

@@ -2,6 +2,19 @@
 - name: Ensure HAProxy is installed.
   package: name=haproxy state=present
 
+- name: Ensure rsyslog is installed
+  package: name=rsyslog state=present
+
+- name: Ensure rsyslog is started and enabled on boot.
+  service: name=rsyslog state=started enabled=yes
+
+- name: Place haproxy rsyslog config
+  template:
+    src: haproxy.conf.j2
+    dest: /etc/rsyslog.d/haproxy.conf
+    mode: 0644
+  notify: restart rsyslog
+
 - name: Ensure HAProxy is enabled (so init script will start it on Debian).
   lineinfile:
     dest: /etc/default/haproxy
@@ -19,6 +32,11 @@
 - name: Set HAProxy version.
   set_fact:
     haproxy_version: "{{ '1.4' if '1.4.' in haproxy_version_result.stdout else '1.5' }}"
+
+- name: generate dhparam
+  community.crypto.openssl_dhparam:
+    path: /etc/haproxy/dhparams.pem
+    size: 2048
 
 - name: Copy HAProxy configuration in place.
   template:
