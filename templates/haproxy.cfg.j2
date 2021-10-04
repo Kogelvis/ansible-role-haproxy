@@ -61,11 +61,7 @@ frontend {{ haproxy_frontend_name }}
     http-response set-header Strict-Transport-Security "max-age=31536000; includeSubDomains;" if { ssl_fc }
     http-response set-header X-Frame-Options "SAMEORIGIN"
     http-response set-header X-Content-Type-Options "nosniff"
-{%- if haproxy_csp == '' %}
-    http-response set-header Content-Security-Policy "default-src 'self' data: 'unsafe-inline' 'unsafe-eval'; img-src 'self'; object-src 'none'; script-src 'self' data: 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
-{%- else %}
-    http-response set-header Content-Security-Policy "{{ haproxy_csp }}"
-{%- endif %}
+    http-response set-header Content-Security-Policy {{ haproxy_csp }}
     http-response set-header Referrer-Policy "same-origin"
     use_backend {{ haproxy_backend_name }} if { path -i -m beg /.well-known/acme-challenge/ }
 {% for backend in haproxy_backends|dict2items %}
