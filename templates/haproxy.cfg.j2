@@ -61,7 +61,7 @@ frontend {{ haproxy_frontend_name }}
     http-response set-header Strict-Transport-Security "max-age=31536000; includeSubDomains;" if { ssl_fc }
     http-response set-header X-Frame-Options "SAMEORIGIN"
     http-response set-header X-Content-Type-Options "nosniff"
-    http-response set-header Content-Security-Policy {{ haproxy_csp }}
+    http-response set-header Content-Security-Policy "{{ haproxy_csp }}"
     http-response set-header Referrer-Policy "same-origin"
     use_backend {{ haproxy_backend_name }} if { path -i -m beg /.well-known/acme-challenge/ }
 {% for backend in haproxy_backends|dict2items %}
