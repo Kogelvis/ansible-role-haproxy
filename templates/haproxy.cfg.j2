@@ -66,7 +66,7 @@ frontend {{ haproxy_frontend_name }}
     use_backend {{ haproxy_backend_name }} if { path -i -m beg /.well-known/acme-challenge/ }
 {% for backend in haproxy_backends|dict2items %}
 {% for url in backend.value.urlpatterns %}
-    use_backend {{ backend.key }} if { hdr(host) -i {{ url }} } { src {{ backend.value.allow_from|join(' } || { src ') }} }
+    use_backend {{ backend.key }} if { hdr(host) -i {{ url }} } { src -f /etc/haproxy/{{ backend.key }}.acl }
 {% endfor %}
 {% endfor %}
     default_backend {{ haproxy_backend_name }}
