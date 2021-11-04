@@ -57,9 +57,9 @@
 - name: generate acls
   template:
     src: backend.acl.j2
-    dest: "/etc/haproxy/{{ backend.key }}.acl"
+    dest: "/etc/haproxy/{{ item.key }}.acl"
     mode: 0644
-  with_items: "{{ haproxy_backends }}"
+  with_dict: "{{ haproxy_backends }}"
 
 - name: Copy HAProxy configuration in place.
   template:
