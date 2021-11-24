@@ -88,4 +88,7 @@ backend {{ backend.key }}
 {% for server in backend.value.nodes %}
     server {{ server.name }} {{ server.address }} cookie {{ server.name }} check
 {% endfor %}
+{% if backend.value.extra_config is defined %}
+    {{ backend.value.extra_config }}
+{% endif %}
 {% endfor %}
