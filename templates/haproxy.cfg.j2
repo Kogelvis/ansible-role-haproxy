@@ -89,6 +89,6 @@ backend {{ backend.key }}
     server {{ server.name }} {{ server.address }} cookie {{ server.name }} check
 {% endfor %}
 {% if backend.value.extra_config is defined %}
-    {{ backend.value.extra_config }}
+    {{ backend.value.extra_config|indent }}
 {% endif %}
 {% endfor %}
